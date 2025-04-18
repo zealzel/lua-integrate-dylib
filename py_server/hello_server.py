@@ -10,6 +10,7 @@ import hello_pb2_grpc
 class HelloServiceServicer(hello_pb2_grpc.HelloServiceServicer):
     def SayHello(self, request, context):
         # 直接回傳一個簡單字串
+        print("Received request:", request)
         return hello_pb2.HelloReply(message=f"Hello, {request.name}!")
 
 
