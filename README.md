@@ -36,16 +36,6 @@ python3 py_server_client/py_client.py
 
 test-gprc-sever.lua -> grpc_server.so -> libgrpc_server.dylib
 
-### compile grpc_server.so (from grpc_server_lua.c)
-
-```bash
-cc -O2 -bundle -undefined dynamic_lookup \
--I/opt/homebrew/include/lua5.4 \
--o grpc_server.so \
-grpc_server_lua.c \
--L. -lgrpc_server
-```
-
 ### compile libgrpc_server.dylib (from grpc_server_bridge.cpp)
 
 ```bash
@@ -56,6 +46,16 @@ clang++ -std=c++17 -stdlib=libc++ -shared -fPIC \
     $(pkg-config --cflags grpc++ protobuf) \
     $(pkg-config --libs grpc++ protobuf) \
     -pthread -ldl
+```
+
+### compile grpc_server.so (from grpc_server_lua.c)
+
+```bash
+cc -O2 -bundle -undefined dynamic_lookup \
+-I$(brew --prefix lua)/include/lua \
+-o grpc_server.so \
+grpc_server_lua.c \
+-L. -lgrpc_server
 ```
 
 ### Run the server
