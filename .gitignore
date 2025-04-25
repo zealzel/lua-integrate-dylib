@@ -3,7 +3,7 @@ luac.out
 *.o
 
 # Lua binary modules
-*.so
+# *.so
 *.dll
 *.dylib
 
@@ -79,4 +79,4 @@ Thumbs.db
 .vscode/
 .idea/
 *.swp
-*.swo 
+*.swo
