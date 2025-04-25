@@ -78,7 +78,7 @@ test-gprc-sever-module.lua -> grpc_server_module.so
 
 ```bash
 clang++ -std=c++17 -stdlib=libc++ -O2 -bundle -undefined dynamic_lookup \
-  -I/opt/homebrew/include/lua5.4 \
+  -I$(brew --prefix lua)/include/lua \
   grpc_server_module.cpp hello.pb.cc hello.grpc.pb.cc \
   -o grpc_server_module.so \
   $(pkg-config --cflags grpc++ protobuf) \
