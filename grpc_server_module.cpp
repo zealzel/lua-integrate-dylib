@@ -11,6 +11,7 @@ extern "C" {
 // #include <lua.h>
 #include <memory>
 #include <string>
+#include <thread>
 
 using grpc::Server;
 using grpc::ServerBuilder;
@@ -33,13 +34,20 @@ class HelloServiceImpl final : public HelloService::Service {
 
 // 2) 全局 server 实例
 static std::unique_ptr<Server> g_server;
+static std::unique_ptr<std::thread> g_server_thread;
 
 // 3) Lua 调用的 start/stop 接口
 static int l_start_server(lua_State* L) {
     const char* port = luaL_checkstring(L, 1);
     // 如果已经在跑，就先停掉
-    if (g_server)
-        g_server->Shutdown(), g_server.reset();
+    if (g_server) {
+        g_server->Shutdown();
+        if (g_server_thread) {
+            g_server_thread->join();
+            g_server_thread.reset();
+        }
+        g_server.reset();
+    }
 
     std::string addr = "[::]:" + std::string(port);
     auto* svc = new HelloServiceImpl();
@@ -49,15 +57,22 @@ static int l_start_server(lua_State* L) {
     g_server = builder.BuildAndStart();
     std::cout << "gRPC Server listening on " << addr << std::endl;
 
-    // 阻塞等待—如果你需要非阻塞，可以放到新线程
-    g_server->Wait();
-    delete svc;
+    // 在新线程中运行服务器
+    g_server_thread = std::make_unique<std::thread>([svc]() {
+        g_server->Wait();
+        delete svc;
+    });
+    
     return 0;
 }
 
 static int l_stop_server(lua_State* L) {
     if (g_server) {
         g_server->Shutdown();
+        if (g_server_thread) {
+            g_server_thread->join();
+            g_server_thread.reset();
+        }
         g_server.reset();
         std::cout << "gRPC Server stopped." << std::endl;
     }
