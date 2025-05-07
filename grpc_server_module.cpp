@@ -32,6 +32,13 @@ class HelloServiceImpl final : public HelloService::Service {
     }
 };
 
+static int l_sleep_for_5_seconds(lua_State* L) {
+    std::cout << "start sleeping" << std::endl;
+    std::this_thread::sleep_for(std::chrono::seconds(5));
+    std::cout << "end sleeping" << std::endl;
+    return 0;
+}
+
 // 2) 全局 server 实例
 static std::unique_ptr<Server> g_server;
 static std::unique_ptr<std::thread> g_server_thread;
@@ -82,7 +89,10 @@ static int l_stop_server(lua_State* L) {
 // 4) 注册到 Lua：require("grpc_server_module")
 extern "C" int luaopen_grpc_server_module(lua_State* L) {
     static const luaL_Reg funcs[] = {
-        {"start_server", l_start_server}, {"stop_server", l_stop_server}, {NULL, NULL}};
+        {"start_server", l_start_server},
+        {"stop_server", l_stop_server},
+        {"sleep_for_5_seconds", l_sleep_for_5_seconds},
+        {NULL, NULL}};
     luaL_newlib(L, funcs);
     return 1;
 }
